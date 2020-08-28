@@ -7,6 +7,9 @@ Query DocBase memos from terminals.
 This tool is developed with Python 3.8. The packages it uses are managed by
 [Poetry](https://python-poetry.org/).
 
+This tool expects two environment variables `DOCBASE_QUERY_TOKEN` and 
+`DOCBASE_DOMAIN`, which are a DocBase API token and a domain name, respectively.
+
 ## Usage
 
 ```bash
