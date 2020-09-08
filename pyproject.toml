@@ -9,6 +9,7 @@ license = "MIT"
 python = "^3.8"
 argparse = "*"
 requests = "*"
+slackclient = "^2.8.2"
 
 [tool.poetry.dev-dependencies]
 
