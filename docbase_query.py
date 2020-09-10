@@ -8,13 +8,14 @@ import argparse
 
 PROGRAM = os.path.basename(__file__)
 DEFAULT_FORMAT = 'plain'
+LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
 
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(PROGRAM)
+logger.setLevel(LOG_LEVEL)
 
-def query(query, format='plain'):
-    logger.info(f'query: {query}')
-    posts = get_query_result(query)
+def query(query_keywords, format=DEFAULT_FORMAT):
+    logger.info(f'query: {query_keywords}')
+    posts = get_query_result(query_keywords)
     count = len(posts)
     logger.info(f'found {count} result(s)')
     result = f'{generate_hit_count_message(count)}\n'
