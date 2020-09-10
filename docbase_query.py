@@ -1,8 +1,27 @@
-import sys
 import os
+import sys
+import logging
 import requests
-import argparse
 import json
+import argparse
+
+
+PROGRAM = os.path.basename(__file__)
+DEFAULT_FORMAT = 'plain'
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(PROGRAM)
+
+def query(query, format='plain'):
+    logger.info(f'query: {query}')
+    posts = get_query_result(query)
+    count = len(posts)
+    logger.info(f'found {count} result(s)')
+    result = f'{generate_hit_count_message(count)}\n'
+    logger.debug(f'output format: {format}')
+    formatter = formatters.get(format, formatters[DEFAULT_FORMAT])
+    result += formatter(posts)
+    return result
 
 
 def get_query_result(query):
@@ -11,7 +30,9 @@ def get_query_result(query):
     query = '%20'.join(query)
     headers = { 'X-DocBaseToken': f'{query_token}' }
     query_uri = f'https://api.docbase.io/teams/{domain}/posts?q={query}'
+    logger.debug(f'query request: {query_uri}')
     response = requests.get(query_uri, headers=headers)
+    logger.debug(f'query response: {response}')
     if response.status_code == 200:
         return response.json()['posts']
     else:
@@ -37,7 +58,7 @@ def format_in_slack(posts):
     return '\n'.join([f"<{post['url']}|{post['title']}>" for post in posts])
 
 formatters = {}
-formatters['plain'] = format_in_plain
+formatters[DEFAULT_FORMAT] = format_in_plain
 formatters['json'] = format_in_json
 formatters['slack'] = format_in_slack
 
@@ -54,9 +75,13 @@ OPTIONS = {
         'help': 'query string'
     },
     '/f': {
-        'choices': ['plain', 'json', 'slack'],
-        'default': 'plain',
-        'help': 'output format (plain by default)'
+        'choices': [DEFAULT_FORMAT, 'json', 'slack'],
+        'default': DEFAULT_FORMAT,
+        'help': f'output format ({DEFAULT_FORMAT} by default)'
+    },
+    '/d': {
+        'action': 'store_true',
+        'help': 'debug mode'
     }
 }
 
@@ -66,11 +91,15 @@ def create_arg_parser():
         parser.add_argument(option, **option_params)
     return parser
 
+
+def main(args):
+    if args['d']:
+        logger.setLevel(logging.DEBUG)
+    result = query(args['query'], format=args['f'])
+    print(result)
+
+
 if __name__ == '__main__':
     arg_parser = create_arg_parser()
     args = vars(arg_parser.parse_args(sys.argv[1:]))
-    posts = get_query_result(args['query'])
-    result = f'{generate_hit_count_message(len(posts))}\n'
-    formatter = formatters[args['f']]
-    result += formatter(posts)
-    print(result)
+    main(args)
