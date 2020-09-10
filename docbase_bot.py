@@ -9,10 +9,12 @@ import docbase_query
 
 
 PROGRAM = os.path.basename(__file__)
+SLACK_API_TOKEN = os.environ.get('SLACK_API_TOKEN', '')
 MY_USER_ID = os.environ.get('SLACK_USER_ID', '')
 MY_BOT_ID = os.environ.get('SLACK_BOT_ID', '')
 QUERY_COMMAND = re.compile(r'dq\W+')
 LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
+HTTPS_PROXY = os.environ.get('https_proxy', None)
 
 logging.basicConfig(level='INFO')
 logger = logging.getLogger(PROGRAM)
@@ -79,5 +81,5 @@ if __name__ == '__main__':
     args = vars(arg_parser.parse_args(sys.argv[1:]))
     if args['debug']:
         logger.setLevel(logging.DEBUG)
-    rtm_client = RTMClient(token=os.environ['SLACK_API_TOKEN'])
+    rtm_client = RTMClient(token=SLACK_API_TOKEN, proxy=HTTPS_PROXY)
     rtm_client.start()
